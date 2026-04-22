@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>OKR Swimlane 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+     background:#f1f5f9;color:#1e293b;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOP BAR ── */
+.topbar{background:#fff;border-bottom:2px solid #e2e8f0;padding:8px 16px;
+        display:flex;align-items:center;gap:10px;flex-shrink:0;
+        box-shadow:0 2px 8px rgba(0,0,0,.07);z-index:30;flex-wrap:wrap}
+.logo{font-size:15px;font-weight:800;color:#0f172a;letter-spacing:-.3px}
+.logo span{color:#7c3aed}
+.sub{font-size:11px;color:#94a3b8;margin-left:2px}
+.tbar-r{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.btn{padding:5px 13px;border-radius:16px;border:1.5px solid #e2e8f0;
+     background:#f8fafc;color:#475569;font-size:12px;font-weight:600;
+     cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:#7c3aed;color:#7c3aed;background:#f5f3ff}
+.btn.act{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.btn.green{background:#059669;border-color:#059669;color:#fff}
+.chip{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;
+      background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;cursor:pointer;white-space:nowrap}
+.chip:hover{opacity:.8}
+.chip.act{color:#fff}
+.sep{width:1px;height:20px;background:#e2e8f0}
+
+/* ── LAYOUT ── */
+.body{flex:1;display:flex;overflow:hidden}
+
+/* ── LEFT PANEL: lane headers ── */
+.lanes-col{width:160px;flex-shrink:0;overflow:hidden;background:#f8fafc;
+           border-right:2px solid #e2e8f0;display:flex;flex-direction:column}
+.lane-hdr-top{height:48px;flex-shrink:0;border-bottom:1.5px solid #e2e8f0;
+              display:flex;align-items:center;padding:0 12px;
+              font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9}
+.lane-hdrs{flex:1;overflow:hidden}
+.lane-hdr{display:flex;align-items:center;gap:8px;padding:0 12px;
+          border-bottom:1px solid #e2e8f0;cursor:pointer;transition:background .15s;
+          user-select:none}
+.lane-hdr:hover{background:#f0fdf4}
+.lane-hdr.faded{opacity:.35}
+.lane-hdr.solo{background:#f0fdf4}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+        justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.lane-name{font-size:11px;font-weight:600;color:#334155;line-height:1.2}
+.lane-cnt{font-size:10px;color:#94a3b8;margin-top:1px}
+
+/* ── MAIN CANVAS AREA ── */
+.canvas-area{flex:1;overflow:auto;position:relative}
+.canvas-inner{position:relative;min-height:100%}
+
+/* ── COLUMN HEADERS (quarters) ── */
+.col-headers{position:sticky;top:0;z-index:20;background:#fff;
+             border-bottom:2px solid #e2e8f0;display:flex;
+             box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.col-hdr{flex:1;padding:8px 12px;font-size:12px;font-weight:700;color:#475569;
+         text-align:center;border-right:1px solid #e2e8f0;min-width:180px}
+.col-hdr:last-child{border-right:none}
+.col-hdr.today-col{background:#fefce8;color:#a16207}
+
+/* ── GRID ── */
+.grid{display:flex;position:relative}
+.col{flex:1;min-width:180px;border-right:1px solid #f1f5f9;position:relative}
+.col:last-child{border-right:none}
+.col.today-col{background:rgba(251,191,36,.04)}
+
+/* ── LANE ROWS ── */
+.lane-row{border-bottom:1px solid #e2e8f0;padding:10px 8px;
+          min-height:90px;display:flex;flex-wrap:wrap;
+          gap:6px;align-items:flex-start;align-content:flex-start;
+          transition:background .15s;position:relative}
+.lane-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.lane-row.faded{opacity:.25;pointer-events:none}
+.lane-row.solo::before{opacity:1}
+
+/* ── CARDS ── */
+.card{border-radius:10px;border:2px solid;padding:8px 10px;cursor:pointer;
+      transition:all .18s;position:relative;width:160px;flex-shrink:0;
+      background:#fff;user-select:none}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.13)}
+.card.expanded{box-shadow:0 0 0 3px rgba(124,58,237,.3)}
+.card-code{font-size:9px;font-weight:800;font-family:ui-monospace,monospace;
+           margin-bottom:3px;letter-spacing:.02em}
+.card-title{font-size:11px;font-weight:600;line-height:1.3;color:#1e293b;margin-bottom:5px}
+.card-owner{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;
+            display:inline-block;margin-bottom:3px}
+.card-dl{font-size:9px;font-weight:700;font-family:ui-monospace,monospace;
+         padding:1px 6px;border-radius:5px;display:inline-block}
+.card-dl.overdue{background:#fee2e2;color:#dc2626}
+.card-dl.soon{background:#fef9c3;color:#b45309}
+.card-dl.normal{background:#f1f5f9;color:#64748b}
+.expand-dot{position:absolute;bottom:6px;right:8px;width:16px;height:16px;
+            border-radius:50%;border:2px solid;display:flex;align-items:center;
+            justify-content:center;font-size:10px;font-weight:900;line-height:1}
+
+/* ── CASCADE DETAIL PANEL ── */
+.detail{position:fixed;top:0;right:0;width:360px;height:100vh;background:#fff;
+        border-left:2px solid #e2e8f0;z-index:50;display:flex;flex-direction:column;
+        box-shadow:-6px 0 24px rgba(0,0,0,.12);
+        transform:translateX(100%);transition:transform .25s ease}
+.detail.open{transform:translateX(0)}
+.det-head{padding:16px;border-bottom:1.5px solid #f1f5f9;flex-shrink:0}
+.det-close{float:right;background:none;border:none;font-size:22px;
+           color:#94a3b8;cursor:pointer;line-height:1;padding:0}
+.det-close:hover{color:#1e293b}
+.det-code{font-size:10px;font-weight:800;font-family:ui-monospace,monospace;
+          text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.det-title{font-size:15px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:8px}
+.det-meta{display:flex;flex-wrap:wrap;gap:6px}
+.det-chip{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600}
+.det-body{flex:1;overflow-y:auto;padding:14px 16px}
+.det-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+         color:#94a3b8;margin:14px 0 8px}
+.det-sec:first-child{margin-top:0}
+.kitem{padding:9px 11px;border-radius:9px;border:1.5px solid #e2e8f0;
+       margin-bottom:6px;background:#f8fafc}
+.kitem-code{font-size:9px;font-weight:800;font-family:ui-monospace,monospace}
+.kitem-title{font-size:12px;color:#334155;margin:2px 0 4px;line-height:1.3}
+.kitem-meta{font-size:10px;color:#94a3b8;display:flex;gap:8px;align-items:center}
+.kitem-dl{font-weight:700;padding:1px 6px;border-radius:4px;font-size:9px}
+.kitem-dl.ov{background:#fee2e2;color:#dc2626}
+.kitem-dl.sn{background:#fef9c3;color:#b45309}
+.kitem-dl.ok{background:#f1f5f9;color:#64748b}
+.det-parent{padding:9px 11px;border-radius:9px;border:1.5px dashed #e2e8f0;
+            font-size:11px;color:#64748b;cursor:pointer;transition:border-color .15s}
+.det-parent:hover{border-color:#7c3aed;color:#7c3aed}
+
+/* ── TODAY LINE ── */
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:#ef4444;
+            pointer-events:none;z-index:5}
+.today-line::before{content:'TODAY';position:absolute;top:6px;left:4px;
+                    font-size:8px;font-weight:800;color:#ef4444;white-space:nowrap}
+
+/* ── LEGEND / STATUS BAR ── */
+.statusbar{background:#fff;border-top:1.5px solid #e2e8f0;padding:6px 16px;
+           display:flex;gap:16px;align-items:center;flex-shrink:0;font-size:11px}
+.sli{display:flex;align-items:center;gap:5px;color:#64748b}
+.sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── SCROLLBAR ── */
+.canvas-area::-webkit-scrollbar{width:6px;height:6px}
+.canvas-area::-webkit-scrollbar-track{background:transparent}
+.canvas-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <span class="logo">OKR <span>Swimlane</span></span>
+    <span class="sub">Фундація Зеленської · 2026</span>
+  </div>
+  <div class="tbar-r">
+    <span style="font-size:11px;color:#94a3b8">Показати:</span>
+    <button class="btn act" id="btn-all" onclick="filterOwner('',this)">Усі</button>
+    <div class="sep"></div>
+    <span style="font-size:11px;color:#94a3b8">Квартал:</span>
+    <button class="btn" id="q-all" onclick="filterQ(0,this)">Всі</button>
+    <button class="btn" id="q1" onclick="filterQ(1,this)">Q1</button>
+    <button class="btn" id="q2" onclick="filterQ(2,this)">Q2</button>
+    <button class="btn" id="q3" onclick="filterQ(3,this)">Q3</button>
+    <button class="btn" id="q4" onclick="filterQ(4,this)">Q4</button>
+    <div class="sep"></div>
+    <button class="btn" onclick="collapseAll()">↩ Згорнути все</button>
+  </div>
+</div>
+
+<div class="body">
+  <!-- Lane headers (left sticky) -->
+  <div class="lanes-col" id="lanes-col">
+    <div class="lane-hdr-top">Співробітник</div>
+    <div class="lane-hdrs" id="lane-hdrs"></div>
+  </div>
+
+  <!-- Scrollable canvas -->
+  <div class="canvas-area" id="canvas-area">
+    <div class="canvas-inner" id="canvas-inner">
+      <!-- Column headers -->
+      <div class="col-headers" id="col-headers"></div>
+      <!-- Grid rows -->
+      <div class="grid" id="grid-wrap">
+        <div class="col" id="col-q1"></div>
+        <div class="col" id="col-q2"></div>
+        <div class="col" id="col-q3"></div>
+        <div class="col" id="col-q4"></div>
+        <div class="col" id="col-later"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <div class="sli"><div class="sdot" style="background:#dc2626"></div>Протерміновано</div>
+  <div class="sli"><div class="sdot" style="background:#f59e0b"></div>Дедлайн &lt;30 днів</div>
+  <div class="sli"><div class="sdot" style="background:#10b981"></div>В нормі</div>
+  <div class="sli"><div class="sdot" style="background:#7c3aed"></div>Objective</div>
+  <div class="sli"><div class="sdot" style="background:#10b981"></div>KR рівень 1</div>
+  <div class="sli"><div class="sdot" style="background:#f59e0b"></div>KR рівень 2</div>
+  <div style="margin-left:auto;color:#94a3b8">Клік на картку — деталі та каскад ↓</div>
+</div>
+
+<!-- Detail panel -->
+<div class="detail" id="detail">
+  <div class="det-head">
+    <button class="det-close" onclick="closeDetail()">×</button>
+    <div class="det-code" id="det-code"></div>
+    <div class="det-title" id="det-title"></div>
+    <div class="det-meta" id="det-meta"></div>
+  </div>
+  <div class="det-body" id="det-body"></div>
+</div>
+
+<script>
+const NODES    = [{"id": "ip", "type": "person", "label": "Ірина Пікалова", "sub": "Виконавча директорка", "owner": "", "dl": "", "_overdue": false, "_due_soon": false}, {"id": "pc05", "type": "objective", "label": "P-C05.1", "sub": "Реалізувати ключові проєкти Фундації на 2026 рік та провести аудит ефективності", "owner": "Ірина Пікалова", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "o2", "type": "objective", "label": "О-2", "sub": "Розробити та впровадити стандартні маршрути реалізації для кожного ключового проєкту", "owner": "Ірина Пікалова", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr1", "type": "kr1", "label": "KR P-C05.1.1", "sub": "Опрацьовано 100% потреб ВПР та надано гуманітарну допомогу великим прийомним родинам (9 областей)", "owner": "Ірина Михайліченко", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr2", "type": "kr1", "label": "KR P-C05.1.2", "sub": "Побудовано 20 будинків «Адреса дитинства», заселено 18 ВПР, підписано акти передачі", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr3", "type": "kr1", "label": "KR P-C05.1.3", "sub": "Відновлено та облаштовано ≥30 об'єктів «Безпечна Школа» (>20 укриттів та >10 харчоблоків)", "owner": "Ігор Кошіль", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr4", "type": "kr1", "label": "KR P-C05.1.4", "sub": "Відкрито 7 навчальних просторів «Школи супергероїв» в 7 областях України", "owner": "Ірина Гудзь", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr5", "type": "kr1", "label": "KR P-C05.1.5", "sub": "Реалізовано таборову програму 2026 (Строкаті Єноти, Голосний кемп, Космокемп, денні табори)", "owner": "Тарас Козаченко", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr6", "type": "kr1", "label": "KR P-C05.1.6", "sub": "Завершено БМР та фасадні роботи центру в Бородянці на 100%, ≥30% внутрішнього оздоблення", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr7", "type": "kr1", "label": "KR P-C05.1.7", "sub": "Забезпечено заклади освіти та охорони здоров'я ≥150 генераторами та/або ≥30 інверторами", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr8", "type": "kr1", "label": "KR P-C05.1.8", "sub": "Актуалізовано ПКД Ізюмської лікарні, розпочато будівництво, погоджено дорожню карту на 2027", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "kr9", "type": "kr1", "label": "KR P-C05.1.9", "sub": "Проаналізовано 100% проєктів, визначено перешкоди, сформовано таблицю рішень", "owner": "Ірина Пікалова", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "o2kr1", "type": "kr1", "label": "KR О-2.1", "sub": "Розроблено та затверджено єдину структуру стандартного документа проєктів", "owner": "Ірина Пікалова", "dl": "30.06.2026", "_overdue": false, "_due_soon": false}, {"id": "o2kr2", "type": "kr1", "label": "KR О-2.2", "sub": "Розроблено маршрути реалізації для 100% ключових проєктів Фундації", "owner": "(кожен PM)", "dl": "30.10.2026", "_overdue": false, "_due_soon": false}, {"id": "o2kr3", "type": "kr1", "label": "KR О-2.3", "sub": "Стандартні документи затверджено та інтегровано в роботу команд", "owner": "Ірина Пікалова", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rn_o", "type": "person", "label": "Ірина Михайліченко", "sub": "Менеджер гуманітарних програм", "owner": "", "dl": "", "_overdue": false, "_due_soon": false}, {"id": "rn_obj", "type": "objective", "label": "РН-P-C05.1.1", "sub": "Опрацювати 100% потреб ВПР та надати гуманітарну допомогу великим прийомним родинам (9 областей)", "owner": "Ірина Михайліченко", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rn1", "type": "kr2", "label": "KR РН-1.1", "sub": "Опрацьовано 100% потреб ВПР, що отримали житло за субвенцією", "owner": "Наталія Макєєва", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rn2", "type": "kr2", "label": "KR РН-1.2", "sub": "Проведено збір даних по кількості ДБСТ по 9 областях", "owner": "Ірина Михайліченко", "dl": "31.03.2026", "_overdue": true, "_due_soon": false}, {"id": "rn3", "type": "kr2", "label": "KR РН-1.3", "sub": "Зібрано потреби та надано допомогу 1-й трійці областей", "owner": "Наталія Макєєва", "dl": "30.06.2026", "_overdue": false, "_due_soon": false}, {"id": "rn4", "type": "kr2", "label": "KR РН-1.4", "sub": "Зібрано потреби та надано допомогу 2-й трійці областей", "owner": "Наталія Макєєва", "dl": "30.09.2026", "_overdue": false, "_due_soon": false}, {"id": "rn5", "type": "kr2", "label": "KR РН-1.5", "sub": "Зібрано потреби та надано допомогу 3-й трійці областей", "owner": "Наталія Макєєва", "dl": "30.11.2026", "_overdue": false, "_due_soon": false}, {"id": "rn6", "type": "kr2", "label": "KR РН-1.6", "sub": "Отримано фінансову документацію від усіх родин", "owner": "Наталія Макєєва", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rn7", "type": "kr2", "label": "KR РН-1.7", "sub": "Досліджено доцільність підтримки прийомних сімей по Україні", "owner": "Ірина Михайліченко", "dl": "30.09.2026", "_overdue": false, "_due_soon": false}, {"id": "sk_o", "type": "person", "label": "Сергій Кулаткін", "sub": "Проєктний менеджер", "owner": "", "dl": "", "_overdue": false, "_due_soon": false}, {"id": "rs_obj", "type": "objective", "label": "РС-P-C05.1.2", "sub": "Завершити будівництво 20 будинків «Адреса дитинства», заселити родини, підписати акти передачі", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rs1", "type": "kr2", "label": "KR РС-2.1", "sub": "ПКД для всіх 20 будинків, підписано 20 договорів генпідряду", "owner": "Сергій Кулаткін", "dl": "15.06.2026", "_overdue": false, "_due_soon": false}, {"id": "rs2", "type": "kr2", "label": "KR РС-2.2", "sub": "Завершено будівництво 10 будинків (донор: Данія)", "owner": "Сергій Кулаткін", "dl": "31.08.2026", "_overdue": false, "_due_soon": false}, {"id": "rs3", "type": "kr2", "label": "KR РС-2.3", "sub": "Завершено будівництво 10 будинків (донор: ОАЄ)", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rs4", "type": "kr2", "label": "KR РС-2.4", "sub": "Отримано всю фінансову та юридичну документацію для передачі будинків", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rs5", "type": "kr2", "label": "KR РС-2.5", "sub": "Заселено 18 великих прийомних родин (ВПР)", "owner": "Ірина Михайліченко", "dl": "30.12.2026", "_overdue": false, "_due_soon": false}, {"id": "rs6", "type": "kr2", "label": "KR РС-2.6", "sub": "Заселено 2 будинки за програмою «Сімейна домівка»", "owner": "Сергій Кулаткін", "dl": "30.12.2026", "_overdue": false, "_due_soon": false}, {"id": "ik_o", "type": "person", "label": "Ігор Кошіль", "sub": "Фахівець з технічної експертизи", "owner": "", "dl": "", "_overdue": false, "_due_soon": false}, {"id": "ps_obj", "type": "objective", "label": "PS-P-C05.1.3", "sub": "Відновити та облаштувати ≥30 об'єктів «Безпечна Школа» (>20 укриттів та >10 харчоблоків) у 2026 році", "owner": "Ігор Кошіль", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "ps1", "type": "kr2", "label": "KR PS-3.1", "sub": "Визначено, пріоритизовано та затверджено перелік ≥30 закладів, сформовано бюджет", "owner": "Ігор Кошіль", "dl": "30.06.2026", "_overdue": false, "_due_soon": false}, {"id": "ps2", "type": "kr2", "label": "KR PS-3.2", "sub": "Тендерна документація затверджена, договори з підрядниками укладені для 100% об'єктів", "owner": "Ігор Кошіль", "dl": "30.08.2026", "_overdue": false, "_due_soon": false}, {"id": "ps3", "type": "kr2", "label": "KR PS-3.3", "sub": "БМР + оснащення завершено: роботи розпочато ≤31.08, будівництво ≤15.12, оснащення ≤30.12", "owner": "Ігор Кошіль", "dl": "30.12.2026", "_overdue": false, "_due_soon": false}, {"id": "ps4", "type": "kr2", "label": "KR PS-3.4", "sub": "30 об'єктів введено в експлуатацію: акти підписано, документація оформлена", "owner": "Ігор Кошіль", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_obj", "type": "objective", "label": "PC-P-C05.1.6", "sub": "Завершити БМР та фасадні роботи центру в Бородянці на 100%, ≥30% внутрішнього оздоблення", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_1", "type": "kr2", "label": "KR РС-6.1", "sub": "Завершено БМР каркасу будівлі", "owner": "Сергій Кулаткін", "dl": "30.07.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_2", "type": "kr2", "label": "KR РС-6.2", "sub": "Розроблено та впроваджено айдентику центру (назва, брендбук)", "owner": "Ніна Горбачова", "dl": "30.09.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_3", "type": "kr2", "label": "KR РС-6.3", "sub": "Облаштовано та оздоблено фасад та покрівлю", "owner": "Сергій Кулаткін", "dl": "30.11.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_4", "type": "kr2", "label": "KR РС-6.4", "sub": "Завершено монтаж та підключення інженерних мереж та систем", "owner": "Сергій Кулаткін", "dl": "30.11.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_5", "type": "kr2", "label": "KR РС-6.5", "sub": "Схема підключення зовнішніх мереж, графік на Q1 2027", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc2_6", "type": "kr2", "label": "KR РС-6.6", "sub": "Завершено ≥30% робіт з внутрішнього оздоблення", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc3_obj", "type": "objective", "label": "PC-P-C05.1.7", "sub": "Забезпечити заклади освіти та охорони здоров'я ≥150 генераторами та/або ≥30 інверторами", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc3_1", "type": "kr2", "label": "KR РС-7.1", "sub": "Проведено оцінку та виявлено потреби закладів (локації доставки)", "owner": "Наталія Макєєва", "dl": "в процесі", "_overdue": false, "_due_soon": false}, {"id": "pc3_2", "type": "kr2", "label": "KR РС-7.2", "sub": "Єдина система вимог до підключення, тендерні процедури проведено", "owner": "Сергій Кулаткін", "dl": "15.05.2026", "_overdue": false, "_due_soon": true}, {"id": "pc3_3", "type": "kr2", "label": "KR РС-7.3", "sub": "Юридична та фінансова документація щодо закупівель оформлена", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc3_4", "type": "kr2", "label": "KR РС-7.4", "sub": "Обладнання доставлено та підключено згідно вимог", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc3_5", "type": "kr2", "label": "KR РС-7.5", "sub": "Отримано документацію з бенефіціарами", "owner": "Наталія Макєєва", "dl": "31.01.2027", "_overdue": false, "_due_soon": false}, {"id": "pc4_obj", "type": "objective", "label": "PC-P-C05.1.8", "sub": "Актуалізувати перелік об'єктів Ізюмської лікарні, затвердити ПКД, розпочати будівництво", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_1", "type": "kr2", "label": "KR РС-8.1", "sub": "Список об'єктів 1-ї фази узгоджено з донором", "owner": "Ірина Гудзь", "dl": "30.05.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_2", "type": "kr2", "label": "KR РС-8.2", "sub": "Оновлена ПКД розроблена та погоджена з донором", "owner": "Сергій Кулаткін", "dl": "30.05.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_3", "type": "kr2", "label": "KR РС-8.3", "sub": "Незалежна експертиза («служба платника») впроваджена", "owner": "Сергій Кулаткін", "dl": "30.05.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_4", "type": "kr2", "label": "KR РС-8.4", "sub": "Активна фаза будівництва 1-ї черги розпочата", "owner": "Сергій Кулаткін", "dl": "30.06.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_5", "type": "kr2", "label": "KR РС-8.5", "sub": "Регулярна координація з Харківською ОВА та Службою Платника (щотижня)", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_6", "type": "kr2", "label": "KR РС-8.6", "sub": "Погоджено дорожню карту на 2027 рік з визначенням обсягів та термінів", "owner": "Сергій Кулаткін", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}, {"id": "pc4_7", "type": "kr2", "label": "KR РС-8.7", "sub": "Програмна та фінансова звітність перед донором", "owner": "Ірина Гудзь", "dl": "31.12.2026", "_overdue": false, "_due_soon": false}];
+const EDGES    = [["ip", "pc05"], ["ip", "o2"], ["pc05", "kr1"], ["pc05", "kr2"], ["pc05", "kr3"], ["pc05", "kr4"], ["pc05", "kr5"], ["pc05", "kr6"], ["pc05", "kr7"], ["pc05", "kr8"], ["pc05", "kr9"], ["o2", "o2kr1"], ["o2", "o2kr2"], ["o2", "o2kr3"], ["kr1", "rn_o"], ["rn_o", "rn_obj"], ["rn_obj", "rn1"], ["rn_obj", "rn2"], ["rn_obj", "rn3"], ["rn_obj", "rn4"], ["rn_obj", "rn5"], ["rn_obj", "rn6"], ["rn_obj", "rn7"], ["kr2", "sk_o"], ["sk_o", "rs_obj"], ["rs_obj", "rs1"], ["rs_obj", "rs2"], ["rs_obj", "rs3"], ["rs_obj", "rs4"], ["rs_obj", "rs5"], ["rs_obj", "rs6"], ["kr3", "ik_o"], ["ik_o", "ps_obj"], ["ps_obj", "ps1"], ["ps_obj", "ps2"], ["ps_obj", "ps3"], ["ps_obj", "ps4"], ["kr6", "sk_o"], ["sk_o", "pc2_obj"], ["pc2_obj", "pc2_1"], ["pc2_obj", "pc2_2"], ["pc2_obj", "pc2_3"], ["pc2_obj", "pc2_4"], ["pc2_obj", "pc2_5"], ["pc2_obj", "pc2_6"], ["kr7", "sk_o"], ["sk_o", "pc3_obj"], ["pc3_obj", "pc3_1"], ["pc3_obj", "pc3_2"], ["pc3_obj", "pc3_3"], ["pc3_obj", "pc3_4"], ["pc3_obj", "pc3_5"], ["kr8", "sk_o"], ["sk_o", "pc4_obj"], ["pc4_obj", "pc4_1"], ["pc4_obj", "pc4_2"], ["pc4_obj", "pc4_3"], ["pc4_obj", "pc4_4"], ["pc4_obj", "pc4_5"], ["pc4_obj", "pc4_6"], ["pc4_obj", "pc4_7"]];
+const COLORS   = {"Ірина Пікалова": "#7c3aed", "Ігор Кошіль": "#059669", "Сергій Кулаткін": "#2563eb", "Ірина Михайліченко": "#db2777", "Ірина Гудзь": "#0891b2", "Тарас Козаченко": "#d97706", "Наталія Макєєва": "#9333ea", "Ніна Горбачова": "#16a34a"};
+const OWNERS   = ["Ірина Пікалова", "Ігор Кошіль", "Сергій Кулаткін", "Ірина Михайліченко", "Ірина Гудзь", "Тарас Козаченко", "Наталія Макєєва", "Ніна Горбачова"];
+const TODAY    = new Date("2026-04-22");
+const IN30     = new Date("2026-05-22");
+
+// ── Maps ──
+const byId={};
+NODES.forEach(n=>{ byId[n.id]=n; });
+const childMap={}, parentMap={};
+EDGES.forEach(([a,b])=>{
+  (childMap[a]=childMap[a]||[]).push(b);
+  (parentMap[b]=parentMap[b]||[]).push(a);
+});
+
+function empColor(o){ return COLORS[o]||'#64748b'; }
+function hexRgb(h,a){
+  const s=(h||'#94a3b8').replace('#','');
+  const f=s.length===3?s.split('').map(c=>c+c).join(''):s;
+  const n=parseInt(f,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+// ── Deadline helpers ──
+function parseDL(s){
+  if(!s||s==='в процесі'||s==='—') return null;
+  const m=s.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  if(!m) return null;
+  return new Date(+m[3],+m[2]-1,+m[1]);
+}
+function dlClass(s){
+  const d=parseDL(s); if(!d) return 'normal';
+  if(d<TODAY) return 'overdue';
+  if(d<=IN30)  return 'soon';
+  return 'normal';
+}
+function dlQ(s){
+  const d=parseDL(s); if(!d) return 5;
+  const m=d.getMonth(); // 0-based
+  if(m<=2) return 1;
+  if(m<=5) return 2;
+  if(m<=8) return 3;
+  if(m<=11) return 4;
+  return 5;
+}
+
+// ── Type styles ──
+function typeStyle(type){
+  return ({
+    objective:{border:'#7c3aed',bg:'#f5f3ff',code:'#7c3aed',dot:'#7c3aed'},
+    kr1:      {border:'#16a34a',bg:'#f0fdf4',code:'#16a34a',dot:'#10b981'},
+    kr2:      {border:'#ca8a04',bg:'#fefce8',code:'#ca8a04',dot:'#f59e0b'},
+    person:   {border:'#94a3b8',bg:'#f8fafc',code:'#94a3b8',dot:'#94a3b8'},
+  })[type]||{border:'#94a3b8',bg:'#f8fafc',code:'#94a3b8',dot:'#94a3b8'};
+}
+
+// ── State ──
+let activeOwner='', activeQ=0, expandedId=null;
+
+// ── Build lane headers ──
+function buildLanes(){
+  const hdrs=document.getElementById('lane-hdrs');
+  hdrs.innerHTML='';
+  const LANE_H=90; // must match lane-row min-height + padding
+  OWNERS.forEach(owner=>{
+    const col=empColor(owner);
+    const initials=owner.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const nodes=NODES.filter(n=>n.owner===owner&&n.type!=='person');
+    const div=document.createElement('div');
+    div.className='lane-hdr';
+    div.id='lhdr-'+CSS.escape(owner);
+    div.style.minHeight=LANE_H+'px';
+    div.innerHTML=`
+      <div class="avatar" style="background:${col}">${initials}</div>
+      <div>
+        <div class="lane-name">${owner.split(' ').slice(0,2).join(' ')}</div>
+        <div class="lane-cnt">${nodes.length} KR</div>
+      </div>`;
+    div.onclick=()=>filterOwner(owner, null);
+    hdrs.appendChild(div);
+  });
+}
+
+// ── Build column headers ──
+function buildColHeaders(){
+  const ch=document.getElementById('col-headers');
+  const qs=[
+    {id:'q1',label:'Q1 — Січень · Лютий · Березень'},
+    {id:'q2',label:'Q2 — Квітень · Травень · Червень'},
+    {id:'q3',label:'Q3 — Липень · Серпень · Вересень'},
+    {id:'q4',label:'Q4 — Жовтень · Листопад · Грудень'},
+    {id:'later',label:'2027+'},
+  ];
+  ch.innerHTML='';
+  qs.forEach(q=>{
+    const currentQ=Math.ceil((TODAY.getMonth()+1)/3);
+    const d=document.createElement('div');
+    d.className='col-hdr'+(q.id==='q'+currentQ?' today-col':'');
+    d.textContent=q.label;
+    ch.appendChild(d);
+  });
+}
+
+// ── Build grid ──
+function buildGrid(){
+  const cols=['q1','q2','q3','q4','later'];
+  // Clear columns, add lane rows for each owner
+  cols.forEach(q=>{
+    const col=document.getElementById('col-'+q);
+    col.innerHTML='';
+    OWNERS.forEach(owner=>{
+      const row=document.createElement('div');
+      row.className='lane-row';
+      row.id=`row-${q}-${owner}`;
+      const col2=empColor(owner);
+      row.style.setProperty('--lane-color',col2);
+      row.style.borderLeft=`3px solid ${hexRgb(col2,.3)}`;
+      col.appendChild(row);
+    });
+  });
+
+  // Place cards
+  const placed=new Set();
+  NODES.forEach(n=>{
+    if(n.type==='person') return;
+    const owner=n.owner||'';
+    if(!OWNERS.includes(owner)) return;
+    const q=dlQ(n.dl);
+    const qKey=q<=4?'q'+q:'later';
+    const row=document.getElementById(`row-${qKey}-${owner}`);
+    if(!row) return;
+    row.appendChild(makeCard(n));
+    placed.add(n.id);
+  });
+}
+
+function makeCard(n){
+  const ts=typeStyle(n.type);
+  const oc=empColor(n.owner||'');
+  const dc=dlClass(n.dl);
+  const hasKids=(childMap[n.id]||[]).length>0;
+
+  const div=document.createElement('div');
+  div.className='card';
+  div.id='card-'+n.id;
+  div.style.borderColor=ts.border;
+  div.style.background=ts.bg;
+  div.dataset.id=n.id;
+  div.dataset.owner=n.owner||'';
+
+  // Overdue/soon border override
+  if(n._overdue)  { div.style.borderColor='#ef4444'; div.style.background='#fff5f5'; }
+  else if(n._due_soon){ div.style.borderColor='#f59e0b'; div.style.background='#fffbeb'; }
+
+  const dlHtml=n.dl&&n.type!=='person'
+    ?`<span class="card-dl ${dc}">${n.dl}</span>` :'';
+  const ownerHtml=n.owner
+    ?`<span class="card-owner" style="background:${hexRgb(oc,.12)};color:${oc}">${n.owner.split(' ').slice(0,2).join(' ')}</span>`:'';
+  const plusBtn=hasKids
+    ?`<div class="expand-dot" style="border-color:${ts.border};color:${ts.border};background:#fff" id="dot-${n.id}">+</div>`:'';
+
+  div.innerHTML=`
+    <div class="card-code" style="color:${ts.code}">${n.label}</div>
+    <div class="card-title">${truncate(n.sub||'',52)}</div>
+    ${ownerHtml}${dlHtml}${plusBtn}`;
+
+  div.onclick=(e)=>{
+    e.stopPropagation();
+    openDetail(n.id);
+  };
+  return div;
+}
+
+function truncate(s,max){
+  return s.length<=max?s:s.slice(0,max-1)+'…';
+}
+
+// ── Detail panel ──
+function openDetail(id){
+  const n=byId[id];
+  if(!n) return;
+  expandedId=id;
+
+  // Highlight card
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('expanded'));
+  const card=document.getElementById('card-'+id);
+  if(card){
+    card.classList.add('expanded');
+    card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+  }
+
+  const oc=empColor(n.owner||'');
+  const ts=typeStyle(n.type);
+  const dc=dlClass(n.dl);
+
+  document.getElementById('det-code').textContent=n.label;
+  document.getElementById('det-code').style.color=ts.code;
+  document.getElementById('det-title').textContent=n.sub||'';
+
+  // Meta chips
+  const meta=document.getElementById('det-meta');
+  let mh='';
+  if(n.owner) mh+=`<span class="det-chip" style="background:${hexRgb(oc,.13)};color:${oc}">${n.owner}</span>`;
+  if(n.dl){
+    const dcls=dc==='overdue'?'background:#fee2e2;color:#dc2626':dc==='soon'?'background:#fef9c3;color:#b45309':'background:#f1f5f9;color:#64748b';
+    mh+=`<span class="det-chip" style="${dcls}">📅 ${n.dl}</span>`;
+  }
+  const typeLbl={objective:'Objective',kr1:'KR рівень 1',kr2:'KR рівень 2',person:'Людина'}[n.type]||n.type;
+  mh+=`<span class="det-chip" style="background:${hexRgb(ts.border,.12)};color:${ts.border}">${typeLbl}</span>`;
+  meta.innerHTML=mh;
+
+  // Body
+  const body=document.getElementById('det-body');
+  let bh='';
+
+  // Parent chain
+  const parents=parentMap[id]||[];
+  if(parents.length){
+    bh+='<div class="det-sec">Каскадовано від</div>';
+    parents.forEach(pid=>{
+      const p=byId[pid]; if(!p||p.type==='person') return;
+      const pts=typeStyle(p.type);
+      bh+=`<div class="det-parent" onclick="openDetail('${pid}')">
+        <span style="font-size:9px;font-weight:800;color:${pts.code};font-family:monospace">${p.label}</span>
+        <span style="font-size:11px;color:#334155;margin-left:6px">${truncate(p.sub||'',60)}</span>
+      </div>`;
+    });
+  }
+
+  // Children
+  const kids=(childMap[id]||[]).map(c=>byId[c]).filter(Boolean);
+  const kidObjs=kids.filter(k=>k.type==='objective'||k.type==='person');
+  const kidKRs =kids.filter(k=>k.type==='kr1'||k.type==='kr2');
+
+  if(kidObjs.length){
+    bh+='<div class="det-sec">Каскадує на</div>';
+    kidObjs.forEach(k=>{
+      const kts=typeStyle(k.type);
+      const koc=empColor(k.owner||'');
+      bh+=`<div class="kitem" style="border-color:${hexRgb(kts.border,.4)};cursor:pointer" onclick="openDetail('${k.id}')">
+        <div class="kitem-code" style="color:${kts.code}">${k.label}</div>
+        <div class="kitem-title">${truncate(k.sub||'',70)}</div>
+        ${k.owner?`<div class="kitem-meta"><span style="color:${koc};font-weight:600">${k.owner}</span></div>`:''}
+      </div>`;
+      // Grandchildren (sub-KRs)
+      const gkids=(childMap[k.id]||[]).map(c=>byId[c]).filter(Boolean);
+      gkids.forEach(gk=>{
+        if(gk.type==='person'){
+          // Show their objective
+          const ggkids=(childMap[gk.id]||[]).map(c=>byId[c]).filter(Boolean);
+          ggkids.forEach(ggk=>renderKRItem(ggk,bh));
+        }
+      });
+    });
+  }
+
+  if(kidKRs.length){
+    bh+='<div class="det-sec">Key Results ('+kidKRs.length+')</div>';
+    kidKRs.forEach(k=>{ bh+=renderKRItem(k); });
+  }
+
+  // Walk deeper for cascade
+  const cascadeKRs=[];
+  function walkKids(nid,depth){
+    if(depth>4) return;
+    (childMap[nid]||[]).forEach(c=>{
+      const cn=byId[c];
+      if(!cn) return;
+      if(cn.type==='kr2') cascadeKRs.push(cn);
+      else walkKids(c,depth+1);
+    });
+  }
+  if(n.type==='kr1'||n.type==='objective'){
+    walkKids(id,0);
+    if(cascadeKRs.length){
+      bh+='<div class="det-sec">KR рівня 2 (каскад, '+cascadeKRs.length+')</div>';
+      cascadeKRs.forEach(k=>{ bh+=renderKRItem(k); });
+    }
+  }
+
+  body.innerHTML=bh;
+  document.getElementById('detail').classList.add('open');
+}
+
+function renderKRItem(k){
+  const kts=typeStyle(k.type);
+  const koc=empColor(k.owner||'');
+  const kdc=dlClass(k.dl);
+  const dlcls=kdc==='overdue'?'ov':kdc==='soon'?'sn':'ok';
+  return `<div class="kitem" style="border-color:${hexRgb(kts.border,.35)};cursor:pointer" onclick="openDetail('${k.id}')">
+    <div class="kitem-code" style="color:${kts.code}">${k.label}</div>
+    <div class="kitem-title">${truncate(k.sub||'',75)}</div>
+    <div class="kitem-meta">
+      ${k.owner?`<span style="color:${koc};font-weight:600">${k.owner.split(' ').slice(0,2).join(' ')}</span>`:''}
+      ${k.dl?`<span class="kitem-dl ${dlcls}">${k.dl}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function closeDetail(){
+  document.getElementById('detail').classList.remove('open');
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('expanded'));
+  expandedId=null;
+}
+
+// ── Filters ──
+function filterOwner(owner, btn){
+  activeOwner=owner;
+  // Update header buttons
+  document.querySelectorAll('.btn[id^="btn-"]').forEach(b=>b.classList.remove('act'));
+  if(btn) btn.classList.add('act');
+  else if(!owner) document.getElementById('btn-all').classList.add('act');
+
+  // Apply to lane headers
+  document.querySelectorAll('.lane-hdr').forEach(h=>{
+    const o=h.querySelector('.lane-name').textContent;
+    const full=OWNERS.find(ow=>ow.startsWith(o.split(' ')[0]))||o;
+    if(!owner||full===owner){h.classList.remove('faded');h.classList.toggle('solo',!!owner);}
+    else h.classList.add('faded');
+  });
+
+  // Apply to rows
+  document.querySelectorAll('.lane-row').forEach(row=>{
+    const rowOwner=row.id.split('-').slice(2).join('-');
+    row.classList.toggle('faded', !!(owner && rowOwner!==owner));
+  });
+
+  closeDetail();
+}
+
+function filterQ(q, btn){
+  activeQ=q;
+  document.querySelectorAll('.btn[id^="q"]').forEach(b=>b.classList.remove('act'));
+  if(btn) btn.classList.add('act');
+
+  ['q1','q2','q3','q4','later'].forEach((qid,i)=>{
+    const col=document.getElementById('col-'+qid);
+    const visible=q===0||(q<=4&&qid==='q'+q)||(q===5&&qid==='later');
+    col.style.display=visible?'':'none';
+    // Also hide corresponding col header
+    const hdrs=document.querySelectorAll('.col-hdr');
+    if(hdrs[i]) hdrs[i].style.display=visible?'':'none';
+  });
+}
+
+function collapseAll(){
+  closeDetail();
+}
+
+// ── Init ──
+function init(){
+  buildLanes();
+  buildColHeaders();
+  buildGrid();
+
+  // Sync lane header scroll with canvas
+  const canvasArea=document.getElementById('canvas-area');
+  const laneHdrs=document.getElementById('lane-hdrs');
+  canvasArea.addEventListener('scroll',()=>{
+    laneHdrs.scrollTop=canvasArea.scrollTop;
+  });
+
+  // Close detail on canvas click
+  document.getElementById('canvas-area').addEventListener('click',()=>closeDetail());
+
+  // Make lane header employee chip buttons
+  OWNERS.forEach(owner=>{
+    const col=empColor(owner);
+    const btn=document.getElementById('btn-all')?.parentElement;
+    if(!btn) return;
+  });
+
+  // Add employee filter chips to topbar
+  const tbar=document.querySelector('.tbar-r');
+  const sep=document.createElement('div'); sep.className='sep';
+  tbar.insertBefore(sep, tbar.children[1]);
+  OWNERS.forEach(owner=>{
+    const col=empColor(owner);
+    const short=owner.split(' ').slice(0,2).join(' ');
+    const c=document.createElement('button');
+    c.className='btn';
+    c.textContent=short;
+    c.style.borderColor=col;
+    c.style.color=col;
+    c.onclick=()=>{
+      document.querySelectorAll('.tbar-r .btn').forEach(b=>{
+        b.style.background='';
+        if(!b.id) b.style.color=empColor(b.textContent.trim().split(' ')[0]);
+      });
+      c.style.background=col;
+      c.style.color='#fff';
+      filterOwner(owner, null);
+    };
+    tbar.insertBefore(c, tbar.children[2]);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
